@@ -7,4 +7,4 @@ By using these tools, one can use a fuzzer and send the inputs to the software u
 # Usage
 Similar to desock (Preeny):
 
-LD_PRELOAD=/path/to/desockmulti/desockmulti.so ./afl-fuzz -d -i testcase_dir -o findings_dir -- /path/to/program [...params...]`
+'LD_PRELOAD=/path/to/desockmulti/desockmulti.so ./afl-fuzz -d -i testcase_dir -o findings_dir -- /path/to/program [...params...]`
