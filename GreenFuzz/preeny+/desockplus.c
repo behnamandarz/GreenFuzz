@@ -180,7 +180,7 @@ void preeny_socket_sync_loop(int from, int to)
 
 	while (!preeny_desock_shutdown_flag)
 	{
-		r = preeny_socket_sync(from, to, 15);
+		r = preeny_socket_sync(from, to, 12);
 		if (r < 0) return;
 	}
 }
