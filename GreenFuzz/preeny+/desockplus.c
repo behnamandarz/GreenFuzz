@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <poll.h>
 #include "logging.h"
+#include <fcntl.h>
 
 #define PREENY_MAX_FD 8192
 #define PREENY_SOCKET_OFFSET 500
@@ -44,6 +45,59 @@ int accept_sock_num = 0;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_t *preeny_socket_threads_to_front[PREENY_MAX_FD] = { 0 };
 pthread_t *preeny_socket_threads_to_back[PREENY_MAX_FD] = { 0 };
+
+
+// Set the non-blocking flag on a socket file descriptor
+int set_nonblocking(int sockfd) {
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    if (flags == -1) {
+        return -1;
+    }
+    if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == -1) {
+        return -1;
+    }
+    return 0;
+}
+
+// Set the SO_REUSEADDR option on a socket file descriptor
+int set_reuseaddr(int sockfd) {
+    int yes = 1;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
+        return -1;
+    }
+    return 0;
+}
+
+// Set the SO_KEEPALIVE option on a socket file descriptor
+int set_keepalive(int sockfd) {
+    int yes = 1;
+    if (setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, &yes, sizeof(yes)) == -1) {
+        return -1;
+    }
+    return 0;
+}
+
+// Set up a socket by setting the specified flags
+int setup(int sockfd, int flag) {
+    if (flag & O_NONBLOCK) {
+        if (set_nonblocking(sockfd) == -1) {
+            return -1;
+        }
+    }
+    if (flag & SO_REUSEADDR) {
+        if (set_reuseaddr(sockfd) == -1) {
+            return -1;
+        }
+    }
+    if (flag & SO_KEEPALIVE) {
+        if (set_keepalive(sockfd) == -1) {
+            return -1;
+        }
+    }
+    return 0;
+}
+
+
 
 int preeny_socket_sync(int from, int to, int timeout)
 {
