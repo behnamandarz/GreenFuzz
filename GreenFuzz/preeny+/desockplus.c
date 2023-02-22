@@ -180,7 +180,7 @@ void preeny_socket_sync_loop(int from, int to)
 
 	while (!preeny_desock_shutdown_flag)
 	{
-		r = preeny_socket_sync(from, to, 5);
+		r = preeny_socket_sync(from, to, 15);
 		if (r < 0) return;
 	}
 }
@@ -234,7 +234,7 @@ int socket(int domain, int type, int protocol)
 	int front_socket;
 	int back_socket;
 
-	if (domain = AF_INET && domain = AF_INET6)
+	if (domain != AF_INET && domain != AF_INET6)
 	{
 		return original_socket(domain, type, protocol);
 	}
@@ -294,7 +294,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 		preeny_desock_accepted_sock = dup(sockfd);
 		return preeny_desock_accepted_sock;
 	}
-	return original_accept(sockfd, addr, addrlen);
+	else return original_accept(sockfd, addr, addrlen);
 }
 
 int accept4(int sockfd, struct sockaddr *addr, socklen_t *addrlen, int flags)
@@ -327,20 +327,22 @@ int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 		printf("Emulating bind on port %d\n", ntohs(((struct sockaddr_in*)addr)->sin_port));
 		return 0;
 	}
-	return original_bind(sockfd, addr, addrlen);
-	
+	else
+	{
+		return original_bind(sockfd, addr, addrlen);
+	}
 }
 
 int listen(int sockfd, int backlog)
 {
 	if (preeny_socket_threads_to_front[sockfd]) return 0;
-	return original_listen(sockfd, backlog);
+	else return original_listen(sockfd, backlog);
 }
 
 int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
 {
 	if (preeny_socket_threads_to_front[sockfd]) return 0;
-	return original_connect(sockfd, addr, addrlen);
+	else return original_connect(sockfd, addr, addrlen);
 }
 
 int close(int fd) {
